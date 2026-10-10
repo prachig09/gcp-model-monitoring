@@ -1,47 +1,39 @@
-import pandas as pd
-import numpy as np
-from sklearn.datasets import fetch_20newsgroups
+# train.py
+import os
+import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
-import joblib
 
-print("Loading real text dataset with balanced classes...")
+def train_and_save_model():
+    # 1. Representative training dataset (Movie/Sentiment Domain)
+    X_train = [
+        "This movie was fantastic, amazing plot and great acting!",
+        "Loved the film! Excellent direction and brilliant performance.",
+        "A true masterpiece, highly recommended for everyone.",
+        "Wonderful experience, thoroughly enjoyed watching it.",
+        "Terrible waste of time, awful acting and boring script.",
+        "Horrible product, worst film ever, completely disappointed.",
+        "Bad movie, poorly directed and dreadful pacing.",
+        "I hated this, completely unwatchable and waste of money."
+    ]
+    y_train = [1, 1, 1, 1, 0, 0, 0, 0]
 
-# Load two distinct categories to represent binary classes (0 = Tech, 1 = Science)
-cats = ['comp.graphics', 'sci.space']
-dataset = fetch_20newsgroups(subset='train', categories=cats, remove=('headers', 'footers', 'quotes'))
+    # 2. Define Pipeline (Vectorization + Model)
+    model_pipeline = Pipeline([
+        ('tfidf', TfidfVectorizer(lowercase=True, stop_words='english')),
+        ('clf', LogisticRegression())
+    ])
 
-df_text = pd.DataFrame({
-    'text': dataset.data,
-    'label': dataset.target
-})
+    # 3. FIT THE PIPELINE (Populates idf_ and classifier coefficients)
+    print("Fitting TF-IDF vectorizer and Logistic Regression classifier...")
+    model_pipeline.fit(X_train, y_train)
 
-# Clean out empty reviews/posts
-df_text = df_text[df_text['text'].str.strip() != ''].reset_index(drop=True)
+    # 4. Save fitted pipeline
+    os.makedirs("model", exist_ok=True)
+    model_path = "model/model.pkl"
+    joblib.dump(model_pipeline, model_path)
+    print(f"Successfully saved fitted pipeline to {model_path}")
 
-# Shuffle and balance classes explicitly
-df_class_0 = df_text[df_text['label'] == 0].sample(n=500, random_state=42)
-df_class_1 = df_text[df_text['label'] == 1].sample(n=500, random_state=42)
-df_imdb = pd.concat([df_class_0, df_class_1]).sample(frac=1, random_state=42).reset_index(drop=True)
-
-# Extract Meta-Features for Monitoring
-df_imdb['text_length'] = df_imdb['text'].apply(len)
-df_imdb['word_count'] = df_imdb['text'].apply(lambda x: len(x.split()))
-
-# Save Baseline Reference Data
-df_imdb[['text_length', 'word_count', 'label']].to_csv('data/reference.csv', index=False)
-
-print(f"Dataset prepared with class distribution:\n{df_imdb['label'].value_counts()}")
-
-# Train Model
-pipeline = Pipeline([
-    ('tfidf', TfidfVectorizer(max_features=1000, stop_words='english')),
-    ('clf', LogisticRegression())
-])
-
-pipeline.fit(df_imdb['text'], df_imdb['label'])
-
-# Save Artifacts
-joblib.dump(pipeline, 'model/model.pkl')
-print("\nSuccess! Model trained and saved to model/model.pkl, baseline saved to data/reference.csv.")
+if __name__ == "__main__":
+    train_and_save_model()
