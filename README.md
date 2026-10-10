@@ -35,7 +35,7 @@ gcp-model-monitoring/
 ```
 
 ## Drift Detection Methodology
-To evaluate drift on unstructured text data without complex embeddings, the pipeline extracts numerical and categorical meta-features from raw input payloads:
+To evaluate drift on unstructured text data without complex embeddings, the pipeline extracts numerical and categorical meta-features from raw input payloads: For detailed report along with snapshots refer `reports-snapshots/final-report.md`.
 
 | Feature / Metric | Statistical Test | Target Drift Identified |
 | --------------- | --------------- | --------------- |
