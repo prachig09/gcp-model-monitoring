@@ -1,0 +1,25 @@
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Python cache & bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated runtime logs (will be populated during production runs)
+data/current_logs.jsonl
+
+# Environment & IDE settings
+.env
+.vscode/
+.idea/
+.DS_Store
+
+# Security & Secrets (Strictly exclude keys)
+*.json
+*.pem
+*.key
+service_account.json
