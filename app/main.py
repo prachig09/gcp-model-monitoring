@@ -4,6 +4,7 @@
 # 3. Exposing Prometheus latency metrics at /metrics.
 import time
 import json
+import os
 import joblib
 import numpy as np
 import pandas as pd
@@ -28,7 +29,8 @@ REQUEST_COUNT = Counter(
     ['endpoint', 'status']
 )
 
-LOG_FILE = "data/current_logs.jsonl"
+# Use writable /tmp directory for container runtime environments
+LOG_FILE = "/tmp/current_logs.jsonl"
 
 @app.middleware("http")
 async def track_latency(request: Request, call_next):
@@ -62,6 +64,8 @@ async def predict(payload: dict):
         "timestamp": time.time()
     }
     
+    # Ensure directory exists before writing
+    os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
     with open(LOG_FILE, "a") as f:
         f.write(json.dumps(log_entry) + "\n")
         
