@@ -5,7 +5,7 @@ import requests
 import time
 
 # REPLACE THIS WITH YOUR DEPLOYED CLOUD RUN URL
-SERVICE_URL = "https://sentiment-monitoring-service-xxxx-uc.a.run.app"
+SERVICE_URL = "https://gcp-model-monitoring-128617373538.us-central1.run.app/predict"
 PREDICT_URL = f"{SERVICE_URL}/predict"
 
 # Reference Window Traffic: Movie/Longer Reviews (Matching Training Domain)
