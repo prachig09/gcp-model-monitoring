@@ -1,10 +1,10 @@
-# NLP Model Monitoring & Drift Detection on Google Cloud Platform
+# Model Monitoring & Drift Detection on Google Cloud Platform
 
 This project implements an end-to-end Machine Learning Model Monitoring system deployed on **Google Cloud Platform (Cloud Run)**. It serves a text sentiment analysis model and monitors for **Domain Shift (Data Drift)** and **Prediction Drift** across real-time inference payloads.
 
 ---
 
-## 🏗️ Architecture & Project Setup
+## Architecture & Project Setup
 
 - **Model**: TF-IDF Vectorizer + Logistic Regression trained on news/science article data.
 - **Serving API**: FastAPI microservice exposing `/predict` and `/metrics` endpoints.
@@ -14,10 +14,10 @@ This project implements an end-to-end Machine Learning Model Monitoring system d
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
-nlp-model-monitoring/
+gcp-model-monitoring/
 ├── app/
 │   ├── main.py             # FastAPI server with Prometheus metric collection
 │   ├── load_test.py        # Client load generator & drift injection script
@@ -32,18 +32,21 @@ nlp-model-monitoring/
 ├── requirements.txt        # Python dependency manifest
 ├── .gitignore              # Files excluded from version control
 └── README.md               # Project documentation
+```
 
-Drift Detection Methodology
+## Drift Detection Methodology
 To evaluate drift on unstructured text data without complex embeddings, the pipeline extracts numerical and categorical meta-features from raw input payloads:
 
-Feature / Metric,Statistical Test,Target Drift Identified
-text_length,2-Sample Kolmogorov-Smirnov (KS) Test,Input Feature / Data Drift
-word_count,2-Sample Kolmogorov-Smirnov (KS) Test,Input Feature / Data Drift
-confidence_score,Population Stability Index (PSI),Model Uncertainty / Prediction Drift
-prediction,Chi-Square Goodness-of-Fit Test,Output Label Shift
+| Feature / Metric | Statistical Test | Target Drift Identified |
+| --------------- | --------------- | --------------- |
+| `text_length `  | 2-Sample Kolmogorov-Smirnov (KS) Test| Input Feature / Data Drift   |
+| `word_count` | 2-Sample Kolmogorov-Smirnov (KS) Test | Input Feature / Data Drift |
+| `confidence_score`| Population Stability Index (PSI)| Model Uncertainty / Prediction Drift|
+|`prediction` | Chi-Square Goodness-of-Fit Test | Output Label Shift|
 
-Step-by-Step Execution Guide
-1. Local Environment Setup & Training
+## Step-by-Step Execution Guide
+### 1. Local Environment Setup & Training
+```bash
 # Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -53,12 +56,14 @@ pip install -r requirements.txt
 
 # Train model and generate reference dataset baseline
 python model/train.py
+```
 
-Run Local API Test
-Bash
+### 2. Run Local API Test
+```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8080
-3. Deploy to GCP Cloud Run
-Bash
+```
+### 3. Deploy to GCP Cloud Run
+```bash
 export PROJECT_ID=$(gcloud config get-value project)
 export REGION="us-central1"
 
@@ -74,45 +79,13 @@ gcloud run deploy sentiment-monitoring-service \
     --platform managed \
     --region $REGION \
     --allow-unauthenticated
-4. Execute Load Test & Inject Domain Drift
-Bash
+```
+### 4. Execute Load Test & Inject Domain Drift
+```bash
 # Update SERVICE_URL in app/load_test.py with your Cloud Run endpoint
 python app/load_test.py
-5. Evaluate Statistical Drift Results
-Bash
+```
+### 5. Evaluate Statistical Drift Results
+```bash
 python app/drift_analyzer.py
-🔒 Security & Billing Compliance
-Budget alerts configured in GCP Console.
-
-No hardcoded secrets, API keys, or service account keys committed to git (.gitignore applied).
-
-Resources wiped post-evaluation using gcloud run services delete and gcloud artifacts repositories delete.
-
-
----
-
-## Part 2: Setting Up `.gitignore`
-
-Before making Git commits, create a `.gitignore` file in your root folder to ensure temporary files, virtual environments, and secrets are excluded:
-
-Create `.gitignore`:
-```text
-# Python bytecode & virtual environments
-__pycache__/
-*.py[cod]
-venv/
-.venv/
-env/
-
-# Data logs generated during production runs
-data/current_logs.jsonl
-
-# IDE & OS specific files
-.vscode/
-.idea/
-.DS_Store
-
-# GCP Secrets / Keys (Safety requirement)
-*.json
-*.pem
-key.json
+```
